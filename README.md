@@ -9,13 +9,15 @@ header{padding:18px;text-align:center;background:#020617}
 section{padding:18px}
 h2{color:#facc15}
 .card{background:#020617;border-radius:18px;padding:16px;margin-bottom:14px}
-.btn{width:100%;padding:14px;border-radius:999px;border:none;background:#22c55e;font-weight:bold;margin-top:10px}
-input,select{width:100%;padding:10px;border-radius:10px;border:none;margin-top:6px}
+.btn{width:100%;padding:18px;border-radius:999px;border:none;background:#22c55e;font-weight:bold;margin-top:12px;font-size:1.1em}
+input,select{width:100%;padding:14px;border-radius:10px;border:none;margin-top:8px;font-size:1em}
 .hidden{display:none}
-table{width:100%;border-collapse:collapse;font-size:0.85em}
-th,td{border:1px solid #334155;padding:6px;text-align:center}
+table{width:100%;border-collapse:collapse;font-size:0.95em}
+th,td{border:1px solid #334155;padding:8px;text-align:center}
 th{background:#1e293b}
 .status{font-weight:bold}
+#resumo{font-size:1.2em;margin-top:12px;color:#facc15;font-weight:bold}
+#relatorio{font-size:1.2em;margin-top:12px;color:#22c55e;font-weight:bold}
 </style>
 </head>
 <body>
@@ -32,7 +34,6 @@ th{background:#1e293b}
 <input id="nome" placeholder="Nome" />
 <input id="whats" placeholder="WhatsApp" />
 <input id="kg" type="number" placeholder="Quantidade (kg)" oninput="calcular()" />
-<input id="km" type="number" placeholder="Distância (km)" oninput="calcular()" />
 <input id="end" placeholder="Endereço completo" />
 <p id="resumo"></p>
 <button class="btn" onclick="enviarPedido()">Enviar Pedido</button>
@@ -40,8 +41,9 @@ th{background:#1e293b}
 <h2>📊 Painel Administrativo</h2>
 <table>
 <thead><tr><th>Data</th><th>Unidade</th><th>Cliente</th><th>Total</th><th>Status</th></tr></thead>
-<tbody id="lista"></tbody></table><p id="relatorio"></p>
+<tbody id="lista"></tbody>
 </table>
+<p id="relatorio"></p>
 </section><script type="module">
 // Firebase
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -69,13 +71,12 @@ if(location.hash==="#admin"){
   }
 }
 
-window.abrirPedido = (t,p)=>{ tipo=t; preco=p; pedido.classList.remove('hidden'); }
+window.abrirPedido = (t,p)=>{ tipo=t; preco=p; pedido.classList.remove('hidden'); calcular(); }
 
 window.calcular = ()=>{
-  let q=Number(kg.value||0), d=Number(km.value||0);
-  let frete = d<=10 ? 7 : 7+(d-10)*2;
-  total = q*preco+frete;
-  resumo.innerText = `Produto: R$ ${(q*preco).toFixed(2)} | Frete: R$ ${frete.toFixed(2)} | Total: R$ ${total.toFixed(2)}`;
+  let q=Number(kg.value||0);
+  total = q*preco;
+  resumo.innerText = `Produto: R$ ${(total).toFixed(2)} | Total: R$ ${(total).toFixed(2)}`;
 }
 
 window.enviarPedido = async ()=>{
@@ -100,7 +101,7 @@ function carregarPedidos(){
       const p=docSnap.data();
       totalDia += p.total;
       lista.innerHTML+=`<tr><td>${p.data}</td><td>${p.unidade}</td><td>${p.cliente}</td><td>R$ ${p.total.toFixed(2)}</td><td class='status'><select onchange="mudarStatus('${docSnap.id}',this.value)"><option ${p.status==='Recebido'?'selected':''}>Recebido</option><option ${p.status==='Pago'?'selected':''}>Pago</option><option ${p.status==='Saiu para entrega'?'selected':''}>Saiu para entrega</option></select></td></tr>`;
-    })
+    });
     relatorio.innerText = `Faturamento total registrado: R$ ${totalDia.toFixed(2)}`;
     new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg').play();
   })
