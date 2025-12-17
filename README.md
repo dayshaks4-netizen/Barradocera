@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="pt-BR">
+<html lang="pt-BR">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -26,8 +26,8 @@ th{background:#1e293b}
 <p>Pedidos salvos na nuvem • Gestão profissional</p>
 </header><section>
 <h2>🛒 Fazer Pedido</h2>
-<div class="card"><button class="btn" onclick="abrirPedido('Atacado',50)">Atacado • R$50/kg</button></div>
-<div class="card"><button class="btn" onclick="abrirPedido('Varejo',60)">Varejo • R$60/kg</button></div>
+<div class="card"><button class="btn" onclick="abrirPedido('Atacado',50,true)">Atacado • R$50/kg (mínimo 30kg)</button></div>
+<div class="card"><button class="btn" onclick="abrirPedido('Varejo',60,false)">Varejo • R$60/kg</button></div>
 </section><section id="pedido" class="hidden">
 <h2>📝 Dados do Pedido</h2>
 <select id="unidade"><option>Bom Jardim</option><option>Barra do Ceará</option></select>
@@ -40,7 +40,7 @@ th{background:#1e293b}
 </section><section id="admin" class="hidden">
 <h2>📊 Painel Administrativo</h2>
 <table>
-<thead><tr><th>Data</th><th>Unidade</th><th>Cliente</th><th>Total</th><th>Status</th></tr></thead>
+<thead><tr><th>Data</th><th>Unidade</th><th>Cliente</th><th>WhatsApp</th><th>Endereço</th><th>Kg</th><th>Total</th><th>Status</th></tr></thead>
 <tbody id="lista"></tbody>
 </table>
 <p id="relatorio"></p>
@@ -61,7 +61,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-let tipo='',preco=0,total=0;
+let tipo='',preco=0,total=0,minimo=false;
 
 if(location.hash==="#admin"){
   const s = prompt('Senha admin');
@@ -71,21 +71,28 @@ if(location.hash==="#admin"){
   }
 }
 
-window.abrirPedido = (t,p)=>{ tipo=t; preco=p; pedido.classList.remove('hidden'); calcular(); }
+window.abrirPedido = (t,p,m)=>{ tipo=t; preco=p; minimo=m; pedido.classList.remove('hidden'); calcular(); }
 
 window.calcular = ()=>{
   let q=Number(kg.value||0);
+  if(minimo && q<30){
+    resumo.innerText = 'Quantidade mínima para atacado é 30kg';
+    total=0;
+    return;
+  }
   total = q*preco;
   resumo.innerText = `Produto: R$ ${(total).toFixed(2)} | Total: R$ ${(total).toFixed(2)}`;
 }
 
 window.enviarPedido = async ()=>{
+  if(total===0){ alert('Quantidade inválida'); return; }
   await addDoc(collection(db,'pedidos'),{
     data: new Date().toLocaleString(),
     tipo, unidade:unidade.value,
     cliente:nome.value,
     whats:whats.value,
     endereco:end.value,
+    kg:Number(kg.value),
     total, status:'Recebido'
   });
   window.open(`https://wa.me/5585999566794?text=Novo pedido ${nome.value} • R$ ${total.toFixed(2)}`,'_blank');
@@ -100,7 +107,23 @@ function carregarPedidos(){
     snap.forEach(docSnap=>{
       const p=docSnap.data();
       totalDia += p.total;
-      lista.innerHTML+=`<tr><td>${p.data}</td><td>${p.unidade}</td><td>${p.cliente}</td><td>R$ ${p.total.toFixed(2)}</td><td class='status'><select onchange="mudarStatus('${docSnap.id}',this.value)"><option ${p.status==='Recebido'?'selected':''}>Recebido</option><option ${p.status==='Pago'?'selected':''}>Pago</option><option ${p.status==='Saiu para entrega'?'selected':''}>Saiu para entrega</option></select></td></tr>`;
+      lista.innerHTML+=`
+      <tr>
+        <td>${p.data}</td>
+        <td>${p.unidade}</td>
+        <td>${p.cliente}</td>
+        <td>${p.whats}</td>
+        <td>${p.endereco}</td>
+        <td>${p.kg || '-'}</td>
+        <td>R$ ${p.total.toFixed(2)}</td>
+        <td class='status'>
+          <select onchange="mudarStatus('${docSnap.id}',this.value)">
+            <option ${p.status==='Recebido'?'selected':''}>Recebido</option>
+            <option ${p.status==='Pago'?'selected':''}>Pago</option>
+            <option ${p.status==='Saiu para entrega'?'selected':''}>Saiu para entrega</option>
+          </select>
+        </td>
+      </tr>`;
     });
     relatorio.innerText = `Faturamento total registrado: R$ ${totalDia.toFixed(2)}`;
     new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg').play();
