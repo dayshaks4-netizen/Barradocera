@@ -7,34 +7,37 @@
 <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
 <script>
 // ==========================
-// CONFIGURAÇÃO FUNCIONAL
+// CONFIGURAÇÃO EMAILJS
 // ==========================
-const EMAILJS_USER_ID = 'WCSxdZiWjexDbb90h';       // Seu User ID
-const EMAILJS_SERVICE_ID = 'WJk7dL8RH5x1xcHTxp5ny'; // Seu Service ID
-const EMAILJS_TEMPLATE_ID = 'template_w2uclpq';     // Template já criado
-
+const EMAILJS_USER_ID = 'WCSxdZiWjexDbb90h';
+const EMAILJS_SERVICE_ID = 'service_x4pofoj';
+const EMAILJS_TEMPLATE_ID = 'template_w2uclpq';
 (function(){emailjs.init(EMAILJS_USER_ID);})();
 </script>
 <style>
-body{margin:0;font-family:'Montserrat',sans-serif;background:linear-gradient(180deg,#0f172a,#1e293b);color:#fff}
-header{padding:24px;text-align:center;background:linear-gradient(90deg,#facc15,#22c55e);color:#0f172a}
-header h1{margin:0;font-size:2em;}
-header p{margin-top:4px;font-size:1.1em}
-section{padding:24px}
-h2{color:#facc15;margin-bottom:16px;text-align:center}
-.card{background:rgba(255,255,255,0.05);border-radius:18px;padding:24px;margin-bottom:16px;transition:all 0.3s ease;cursor:pointer}
-.card:hover{background:rgba(255,255,255,0.15);transform:scale(1.03)}
-.btn{width:100%;padding:18px;border-radius:999px;border:none;background:#22c55e;color:#fff;font-weight:bold;margin-top:12px;font-size:1.2em;transition:all 0.3s ease;cursor:pointer}
-.btn:hover{background:#16a34a;transform:scale(1.05)}
-input,select{width:100%;padding:16px;border-radius:12px;border:none;margin-top:8px;font-size:1em}
-.hidden{display:none}
-table{width:100%;border-collapse:collapse;font-size:1em;margin-top:16px}
-th,td{border:1px solid #334155;padding:12px;text-align:center}
-th{background:#1e293b}
-.status{font-weight:bold}
-#resumo{font-size:1.3em;margin-top:12px;color:#facc15;font-weight:bold;text-align:center}
-#relatorio{font-size:1.3em;margin-top:12px;color:#22c55e;font-weight:bold;text-align:center}
-footer{padding:16px;text-align:center;color:#facc15;font-size:0.9em;margin-top:24px}
+/* Reset & base */
+* {box-sizing: border-box; margin: 0; padding: 0;}
+body{font-family:'Montserrat',sans-serif;background:linear-gradient(180deg,#0f172a,#1e293b);color:#fff;line-height:1.6;}
+header{padding:20px;text-align:center;background:linear-gradient(90deg,#facc15,#22c55e);color:#0f172a;box-shadow:0 4px 6px rgba(0,0,0,0.3);}
+header h1{font-size:2.2em;}
+header p{font-size:1.1em; margin-top:6px;}
+section{padding:24px; max-width:900px; margin:0 auto;}
+h2{color:#facc15;text-align:center;margin-bottom:20px;font-size:1.8em;}
+.card{background:rgba(255,255,255,0.08);border-radius:20px;padding:24px;margin-bottom:20px;transition:all 0.3s ease; cursor:pointer;}
+.card:hover{background:rgba(255,255,255,0.15); transform:scale(1.03);}
+.btn{width:100%;padding:18px;border-radius:999px;border:none;background:#22c55e;color:#fff;font-weight:bold;margin-top:12px;font-size:1.2em;transition:all 0.3s ease; cursor:pointer; box-shadow:0 4px 8px rgba(0,0,0,0.2);}
+.btn:hover{background:#16a34a; transform:scale(1.05);}
+input,select{width:100%;padding:16px;border-radius:12px;border:none;margin-top:10px;font-size:1em;background:#1e293b;color:#fff;}
+input::placeholder{color:#cbd5e1;}
+.hidden{display:none;}
+table{width:100%;border-collapse:collapse;font-size:1em;margin-top:16px;}
+th,td{border:1px solid #334155;padding:12px;text-align:center;}
+th{background:#1e293b;}
+.status{font-weight:bold;}
+#resumo{font-size:1.3em;margin-top:12px;color:#facc15;font-weight:bold;text-align:center;}
+#relatorio{font-size:1.3em;margin-top:12px;color:#22c55e;font-weight:bold;text-align:center;}
+footer{padding:16px;text-align:center;color:#facc15;font-size:0.9em;margin-top:24px;}
+@media(max-width:600px){.btn{font-size:1em;padding:14px;}h2{font-size:1.5em;}}
 </style>
 </head>
 <body>
@@ -44,7 +47,7 @@ footer{padding:16px;text-align:center;color:#facc15;font-size:0.9em;margin-top:2
 </header>
 
 <section>
-<h2>🛒 Fazer Pedido</h2>
+<h2>🛒 Escolha seu pedido</h2>
 <div class="card"><button class="btn" onclick="abrirPedido('Atacado',50,true)">Atacado • R$50/kg (mínimo 30kg)</button></div>
 <div class="card"><button class="btn" onclick="abrirPedido('Varejo',60,false)">Varejo • R$60/kg</button></div>
 </section>
@@ -53,7 +56,7 @@ footer{padding:16px;text-align:center;color:#facc15;font-size:0.9em;margin-top:2
 <h2>📝 Dados do Pedido</h2>
 <div class="card">
 <select id="unidade"><option>Bom Jardim</option><option>Barra do Ceará</option></select>
-<input id="nome" placeholder="Nome" />
+<input id="nome" placeholder="Nome do Cliente" />
 <input id="whats" placeholder="WhatsApp" />
 <input id="kg" type="number" placeholder="Quantidade (kg)" oninput="calcular()" />
 <input id="end" placeholder="Endereço completo" />
@@ -101,7 +104,9 @@ if(location.hash==="#admin"){
   }
 }
 
-window.abrirPedido = (t,p,m)=>{ tipo=t; preco=p; minimo=m; pedido.classList.remove('hidden'); calcular(); }
+window.abrirPedido = (t,p,m)=>{
+  tipo=t; preco=p; minimo=m; pedido.classList.remove('hidden'); calcular();
+}
 
 window.calcular = ()=>{
   let q = Number(kg.value || 0);
@@ -117,7 +122,6 @@ window.enviarPedido = async ()=>{
     cliente:nome.value, whats:whats.value, endereco:end.value, kg:Number(kg.value), total, status:'Recebido'
   });
 
-  // Envio de Email automático via EmailJS
   emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID,{
     cliente:nome.value,
     whatsapp:whats.value,
@@ -127,7 +131,6 @@ window.enviarPedido = async ()=>{
     endereco:end.value
   }).then(()=>console.log('Email enviado com sucesso')).catch(err=>console.error('Erro ao enviar email', err));
 
-  // WhatsApp link com todos os dados
   const mensagem = `Novo pedido:\nCliente: ${nome.value}\nWhatsApp: ${whats.value}\nUnidade: ${unidade.value}\nQuantidade: ${kg.value}kg\nTotal: R$ ${total.toFixed(2)}\nEndereço: ${end.value}`;
   window.open(`https://wa.me/5585999566794?text=${encodeURIComponent(mensagem)}`, '_blank');
 
