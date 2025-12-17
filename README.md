@@ -1,9 +1,20 @@
-
+<html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Daysha Kércia | Camarão Premium</title>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+<script>
+// ==========================
+// CONFIGURAÇÃO FUNCIONAL
+// ==========================
+const EMAILJS_USER_ID = 'WCSxdZiWjexDbb90h';       // Seu User ID
+const EMAILJS_SERVICE_ID = 'WJk7dL8RH5x1xcHTxp5ny'; // Seu Service ID
+const EMAILJS_TEMPLATE_ID = 'template_w2uclpq';     // Template já criado
+
+(function(){emailjs.init(EMAILJS_USER_ID);})();
+</script>
 <style>
 body{margin:0;font-family:'Montserrat',sans-serif;background:linear-gradient(180deg,#0f172a,#1e293b);color:#fff}
 header{padding:24px;text-align:center;background:linear-gradient(90deg,#facc15,#22c55e);color:#0f172a}
@@ -30,11 +41,15 @@ footer{padding:16px;text-align:center;color:#facc15;font-size:0.9em;margin-top:2
 <header>
 <h1>🦐 Daysha Kércia Camarão Premium</h1>
 <p>Pedidos salvos na nuvem • Gestão profissional</p>
-</header><section>
+</header>
+
+<section>
 <h2>🛒 Fazer Pedido</h2>
 <div class="card"><button class="btn" onclick="abrirPedido('Atacado',50,true)">Atacado • R$50/kg (mínimo 30kg)</button></div>
 <div class="card"><button class="btn" onclick="abrirPedido('Varejo',60,false)">Varejo • R$60/kg</button></div>
-</section><section id="pedido" class="hidden">
+</section>
+
+<section id="pedido" class="hidden">
 <h2>📝 Dados do Pedido</h2>
 <div class="card">
 <select id="unidade"><option>Bom Jardim</option><option>Barra do Ceará</option></select>
@@ -45,16 +60,22 @@ footer{padding:16px;text-align:center;color:#facc15;font-size:0.9em;margin-top:2
 <p id="resumo"></p>
 <button class="btn" onclick="enviarPedido()">Enviar Pedido</button>
 </div>
-</section><section id="admin" class="hidden">
+</section>
+
+<section id="admin" class="hidden">
 <h2>📊 Painel Administrativo</h2>
 <table>
 <thead><tr><th>Data</th><th>Unidade</th><th>Cliente</th><th>WhatsApp</th><th>Endereço</th><th>Kg</th><th>Total</th><th>Status</th></tr></thead>
 <tbody id="lista"></tbody>
 </table>
 <p id="relatorio"></p>
-</section><footer>
+</section>
+
+<footer>
 &copy; 2025 Daysha Kércia • Todos os direitos reservados
-</footer><script type="module">
+</footer>
+
+<script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getFirestore, collection, addDoc, onSnapshot, updateDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
@@ -91,12 +112,25 @@ window.calcular = ()=>{
 
 window.enviarPedido = async ()=>{
   if(total===0 || !nome.value || !whats.value || !end.value){ alert('Preencha todos os campos corretamente'); return; }
-  const pedidoRef = await addDoc(collection(db,'pedidos'),{
+  await addDoc(collection(db,'pedidos'),{
     data: new Date().toLocaleString(), tipo, unidade:unidade.value,
     cliente:nome.value, whats:whats.value, endereco:end.value, kg:Number(kg.value), total, status:'Recebido'
   });
+
+  // Envio de Email automático via EmailJS
+  emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID,{
+    cliente:nome.value,
+    whatsapp:whats.value,
+    unidade:unidade.value,
+    kg:kg.value,
+    total:total.toFixed(2),
+    endereco:end.value
+  }).then(()=>console.log('Email enviado com sucesso')).catch(err=>console.error('Erro ao enviar email', err));
+
+  // WhatsApp link com todos os dados
   const mensagem = `Novo pedido:\nCliente: ${nome.value}\nWhatsApp: ${whats.value}\nUnidade: ${unidade.value}\nQuantidade: ${kg.value}kg\nTotal: R$ ${total.toFixed(2)}\nEndereço: ${end.value}`;
   window.open(`https://wa.me/5585999566794?text=${encodeURIComponent(mensagem)}`, '_blank');
+
   alert('Pedido enviado com sucesso!');
   nome.value=''; whats.value=''; kg.value=''; end.value=''; resumo.innerText='';
 }
@@ -106,8 +140,24 @@ function carregarPedidos(){
   onSnapshot(collection(db,'pedidos'), snap=>{
     lista.innerHTML=''; totalDia=0;
     snap.forEach(docSnap=>{
-      const p=docSnap.data(); totalDia+=p.total;
-      lista.innerHTML+=`<tr><td>${p.data}</td><td>${p.unidade}</td><td>${p.cliente}</td><td>${p.whats}</td><td>${p.endereco}</td><td>${p.kg}</td><td>R$ ${p.total.toFixed(2)}</td><td class='status'><select onchange="mudarStatus('${docSnap.id}',this.value)"><option ${p.status==='Recebido'?'selected':''}>Recebido</option><option ${p.status==='Pago'?'selected':''}>Pago</option><option ${p.status==='Saiu para entrega'?'selected':''}>Saiu para entrega</option></select></td></tr>`;
+      const p=docSnap.data();
+      totalDia+=p.total;
+      lista.innerHTML+=`<tr>
+        <td>${p.data}</td>
+        <td>${p.unidade}</td>
+        <td>${p.cliente}</td>
+        <td>${p.whats}</td>
+        <td>${p.endereco}</td>
+        <td>${p.kg}</td>
+        <td>R$ ${p.total.toFixed(2)}</td>
+        <td class='status'>
+          <select onchange="mudarStatus('${docSnap.id}',this.value)">
+            <option ${p.status==='Recebido'?'selected':''}>Recebido</option>
+            <option ${p.status==='Pago'?'selected':''}>Pago</option>
+            <option ${p.status==='Saiu para entrega'?'selected':''}>Saiu para entrega</option>
+          </select>
+        </td>
+      </tr>`;
     });
     relatorio.innerText = `Faturamento total registrado: R$ ${totalDia.toFixed(2)}`;
     new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg').play();
@@ -117,4 +167,5 @@ function carregarPedidos(){
 window.mudarStatus = async (id, novo)=>{
   await updateDoc(doc(db,'pedidos',id), { status:novo });
 }
-</script></body>
+</script>
+</body>
